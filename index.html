@@ -624,6 +624,141 @@
       th:nth-child(n+5):not(:last-child) { display: none; }
       td:nth-child(n+5):not(:last-child) { display: none; }
     }
+
+    /* ── BOTTLE MANAGEMENT ─────────────────────────── */
+    .modal-lg { max-width: 700px; }
+
+    .bottle-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem 0;
+    }
+
+    .bottle-count-hint { font-size: 0.82rem; color: var(--muted); }
+
+    .einbuchen-form {
+      margin: 1rem 1.5rem 0;
+      background: var(--bg);
+      border: 1px solid var(--cream-d);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+
+    .einbuchen-form h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      color: var(--burgundy);
+      margin-bottom: 0.75rem;
+    }
+
+    .upload-area {
+      border: 2px dashed var(--cream-d);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .upload-area:hover { border-color: var(--burgundy-l); background: var(--cream); }
+    .upload-area input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .upload-hint { font-size: 0.78rem; color: var(--muted); }
+
+    .bottle-panel { padding: 0.75rem 1.5rem 1.5rem; }
+
+    .section-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--cream-d);
+      margin-bottom: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .bottle-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .bottle-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 12px;
+      border: 1px solid var(--cream-d);
+      border-radius: var(--radius);
+      background: var(--white);
+      transition: box-shadow 0.15s;
+    }
+    .bottle-item:hover { box-shadow: var(--shadow); }
+    .bottle-item.ausgebucht { opacity: 0.55; background: var(--bg); }
+
+    .bottle-thumb {
+      width: 54px;
+      height: 70px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      cursor: zoom-in;
+      flex-shrink: 0;
+      border: 1px solid var(--cream-d);
+    }
+
+    .bottle-thumb-placeholder {
+      width: 54px;
+      height: 70px;
+      border-radius: var(--radius-sm);
+      background: var(--cream-d);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .bottle-info { flex: 1; min-width: 0; }
+    .bottle-status { font-weight: 700; font-size: 0.85rem; color: var(--burgundy); }
+    .bottle-meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .bottle-notizen { font-size: 0.78rem; font-style: italic; color: var(--ink); margin-top: 4px; }
+    .bottle-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+
+    .btn-success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+    }
+    .btn-success:hover { background: #c8e6c9; }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+    .lightbox img {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: var(--radius);
+      object-fit: contain;
+      box-shadow: 0 0 60px rgba(0,0,0,0.5);
+    }
   </style>
 </head>
 <body>
@@ -800,16 +935,54 @@
   </div>
 </div>
 
+<!-- BOTTLE MODAL -->
+<div class="overlay" id="bottle-overlay" onclick="closeBottleModalOutside(event)">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title" id="bottle-modal-title">Flaschen verwalten</span>
+      <button class="modal-close" onclick="closeBottleModal()">✕</button>
+    </div>
+
+    <div class="bottle-toolbar">
+      <span class="bottle-count-hint" id="bottle-count-hint"></span>
+      <button class="btn btn-primary btn-sm" onclick="showEinbuchenForm()">＋ Flasche einbuchen</button>
+    </div>
+
+    <div class="einbuchen-form" id="bottle-einbuchen-form" style="display:none">
+      <h4>Neue Flasche einbuchen</h4>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:0.75rem">
+        <div class="form-group">
+          <label>Foto (optional)</label>
+          <div class="upload-area" id="upload-area">
+            <input type="file" id="einbuchen-bild" accept="image/*" onchange="handleBildPreview(this)" />
+            <span id="upload-hint-text">📷 Foto auswählen</span>
+            <span class="upload-hint">JPG, PNG, HEIC …</span>
+            <img id="einbuchen-preview" style="display:none;max-height:90px;border-radius:4px;margin-top:4px" alt="" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notiz (optional)</label>
+          <textarea id="einbuchen-notizen" placeholder="z.B. Kaufort, Anlass, Besonderheiten…" style="height:100px"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:0.75rem">
+        <button class="btn btn-ghost btn-sm" onclick="hideEinbuchenForm()">Abbrechen</button>
+        <button class="btn btn-primary btn-sm" id="einbuchen-btn" onclick="einbuchenFlasche()">Einbuchen</button>
+      </div>
+    </div>
+
+    <div class="bottle-panel">
+      <div id="bottle-list"><div class="loading">Lade Flaschen…</div></div>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-  // ──────────────────────────────────────────────────
-  // KONFIGURATION – hier anpassen!
-  // ──────────────────────────────────────────────────
-  const SUPABASE_URL  = 'https://kxluqqcpyjqkuhunbcnr.supabase.co';   // z.B. https://xxxxx.supabase.co
-  const SUPABASE_ANON_KEY = 'sb_publishable_miwPxtHfQqAvPqa3qIj6GQ_ypKLIaJq'; // Supabase anon public key
-  // ──────────────────────────────────────────────────
+  const SUPABASE_URL  = 'https://kxluqqcpyjqkuhunbcnr.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_miwPxtHfQqAvPqa3qIj6GQ_ypKLIaJq';
 
   let supabase_client = null;
   let allWeine = [];
@@ -818,7 +991,6 @@
   let starValue = 0;
   let currentView = 'table';
 
-  // Init
   document.addEventListener('DOMContentLoaded', () => {
     if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
       document.getElementById('config-banner').style.display = 'block';
@@ -829,20 +1001,10 @@
     loadWeine();
   });
 
-  // ── DATA ───────────────────────────────────────────
   async function loadWeine() {
-    const { data, error } = await supabase_client
-      .from('weine')
-      .select('*')
-      .order('name');
-
+    const { data, error } = await supabase_client.from('weine').select('*').order('name');
     document.getElementById('loading').style.display = 'none';
-
-    if (error) {
-      showToast('Fehler beim Laden: ' + error.message);
-      return;
-    }
-
+    if (error) { showToast('Fehler beim Laden: ' + error.message); return; }
     allWeine = data || [];
     applyFilters();
     updateStats();
@@ -852,19 +1014,15 @@
     const q = document.getElementById('search-input').value.toLowerCase();
     const typ = document.getElementById('filter-typ').value;
     const sort = document.getElementById('sort-by').value;
-
     filteredWeine = allWeine.filter(w => {
       const matchQ = !q ||
         (w.name || '').toLowerCase().includes(q) ||
         (w.weingut || '').toLowerCase().includes(q) ||
         (w.region || '').toLowerCase().includes(q) ||
         (w.rebsorte || '').toLowerCase().includes(q);
-      const matchTyp = !typ || (w.rebsorte || w.name || '').includes(typ) ||
-        // fallback: use the type field if present
-        (w.typ || '') === typ;
+      const matchTyp = !typ || (w.rebsorte || w.name || '').includes(typ) || (w.typ || '') === typ;
       return matchQ && matchTyp;
     });
-
     filteredWeine.sort((a, b) => {
       switch (sort) {
         case 'jahrgang': return (b.jahrgang || 0) - (a.jahrgang || 0);
@@ -874,7 +1032,6 @@
         default: return (a.name || '').localeCompare(b.name || '', 'de');
       }
     });
-
     renderTable();
     renderCards();
     updateStats();
@@ -886,28 +1043,19 @@
     const wert = allWeine.reduce((s, w) => s + (w.flaschen || 0) * (w.kaufpreis || 0), 0);
     const bewertet = allWeine.filter(w => w.bewertung);
     const avgBew = bewertet.length ? (bewertet.reduce((s, w) => s + w.bewertung, 0) / bewertet.length).toFixed(1) : '—';
-
     document.getElementById('stat-eintraege').textContent = total;
     document.getElementById('stat-flaschen').textContent = flaschen;
     document.getElementById('stat-wert').textContent = wert > 0 ? `${wert.toLocaleString('de-CH', {maximumFractionDigits:0})}` : '—';
     document.getElementById('stat-bewertung').textContent = avgBew !== '—' ? avgBew + ' ★' : '—';
   }
 
-  // ── TABLE ──────────────────────────────────────────
   function renderTable() {
     const tbody = document.getElementById('table-body');
     const table = document.getElementById('wine-table');
     const empty = document.getElementById('empty-table');
-
-    if (filteredWeine.length === 0) {
-      table.style.display = 'none';
-      empty.style.display = 'block';
-      return;
-    }
-
+    if (filteredWeine.length === 0) { table.style.display = 'none'; empty.style.display = 'block'; return; }
     table.style.display = 'table';
     empty.style.display = 'none';
-
     tbody.innerHTML = filteredWeine.map(w => `
       <tr>
         <td>
@@ -921,6 +1069,7 @@
         <td>${renderStars(w.bewertung)}</td>
         <td>
           <div class="actions-cell">
+            <button class="btn btn-ghost btn-sm" onclick="openBottleModal('${w.id}')" title="Flaschen verwalten">🍾</button>
             <button class="btn btn-ghost btn-sm" onclick="editWein('${w.id}')">✎</button>
             <button class="btn btn-danger btn-sm" onclick="deleteWein('${w.id}', '${esc(w.name)}')">✕</button>
           </div>
@@ -929,17 +1078,10 @@
     `).join('');
   }
 
-  // ── CARDS ──────────────────────────────────────────
   function renderCards() {
     const grid = document.getElementById('card-grid');
     const empty = document.getElementById('empty-cards');
-
-    if (filteredWeine.length === 0) {
-      grid.innerHTML = '';
-      empty.style.display = 'block';
-      return;
-    }
-
+    if (filteredWeine.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
     empty.style.display = 'none';
     grid.innerHTML = filteredWeine.map(w => `
       <div class="wine-card">
@@ -947,10 +1089,7 @@
           ${w.jahrgang ? `<div class="card-jahrgang">${w.jahrgang}</div>` : ''}
           <div class="card-name">${esc(w.name)}</div>
           ${w.weingut ? `<div class="card-weingut">${esc(w.weingut)}</div>` : ''}
-          <div class="card-flaschen">
-            ${w.flaschen}
-            <small>Fl.</small>
-          </div>
+          <div class="card-flaschen">${w.flaschen}<small>Fl.</small></div>
         </div>
         <div class="card-body">
           <div class="card-meta">
@@ -961,18 +1100,17 @@
           ${w.notizen ? `<div class="card-notizen">${esc(w.notizen)}</div>` : ''}
         </div>
         <div class="card-footer">
-          <button class="btn btn-ghost btn-sm" onclick="editWein('${w.id}')">✎ Bearbeiten</button>
+          <button class="btn btn-ghost btn-sm" onclick="openBottleModal('${w.id}')">🍾 Flaschen</button>
+          <button class="btn btn-ghost btn-sm" onclick="editWein('${w.id}')">✎</button>
           <button class="btn btn-danger btn-sm" onclick="deleteWein('${w.id}', '${esc(w.name)}')">✕</button>
         </div>
       </div>
     `).join('');
   }
 
-  // ── MODAL ──────────────────────────────────────────
   function openModal(wein = null) {
     editId = wein ? wein.id : null;
     starValue = 0;
-
     document.getElementById('modal-title').textContent = wein ? 'Wein bearbeiten' : 'Wein erfassen';
     document.getElementById('f-name').value = wein?.name || '';
     document.getElementById('f-weingut').value = wein?.weingut || '';
@@ -983,28 +1121,14 @@
     document.getElementById('f-flaschen').value = wein?.flaschen ?? 1;
     document.getElementById('f-kaufpreis').value = wein?.kaufpreis || '';
     document.getElementById('f-notizen').value = wein?.notizen || '';
-
-    if (wein?.bewertung) setStar(wein.bewertung);
-    else updateStarUI(0);
-
+    if (wein?.bewertung) setStar(wein.bewertung); else updateStarUI(0);
     document.getElementById('modal-overlay').classList.add('open');
     setTimeout(() => document.getElementById('f-name').focus(), 100);
   }
 
-  function closeModal() {
-    document.getElementById('modal-overlay').classList.remove('open');
-    editId = null;
-  }
-
-  function closeModalOutside(e) {
-    if (e.target === document.getElementById('modal-overlay')) closeModal();
-  }
-
-  function setStar(v) {
-    starValue = v;
-    updateStarUI(v);
-  }
-
+  function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editId = null; }
+  function closeModalOutside(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+  function setStar(v) { starValue = v; updateStarUI(v); }
   function updateStarUI(v) {
     document.querySelectorAll('#star-input span').forEach(s => {
       s.classList.toggle('active', parseInt(s.dataset.v) <= v);
@@ -1014,15 +1138,13 @@
   async function saveWein() {
     const name = document.getElementById('f-name').value.trim();
     const flaschen = parseInt(document.getElementById('f-flaschen').value);
-
     if (!name) { showToast('Weinname ist erforderlich.'); return; }
     if (isNaN(flaschen) || flaschen < 0) { showToast('Bitte eine gültige Flaschenzahl eingeben.'); return; }
-
     const payload = {
       name,
       weingut: document.getElementById('f-weingut').value.trim() || null,
       jahrgang: parseInt(document.getElementById('f-jahrgang').value) || null,
-      region: document.getElementById('f-region').value.trim() || null,
+      region: document.getElementById('f-region')?.value.trim() || null,
       rebsorte: document.getElementById('f-rebsorte').value.trim() || null,
       typ: document.getElementById('f-typ').value || null,
       flaschen,
@@ -1030,16 +1152,13 @@
       notizen: document.getElementById('f-notizen').value.trim() || null,
       bewertung: starValue || null,
     };
-
     let error;
     if (editId) {
       ({ error } = await supabase_client.from('weine').update(payload).eq('id', editId));
     } else {
       ({ error } = await supabase_client.from('weine').insert([payload]));
     }
-
     if (error) { showToast('Fehler: ' + error.message); return; }
-
     showToast(editId ? 'Wein aktualisiert ✓' : 'Wein erfasst ✓');
     closeModal();
     loadWeine();
@@ -1058,7 +1177,6 @@
     loadWeine();
   }
 
-  // ── VIEW TOGGLE ────────────────────────────────────
   function setView(v) {
     currentView = v;
     document.getElementById('view-table').style.display = v === 'table' ? 'block' : 'none';
@@ -1067,22 +1185,14 @@
     document.getElementById('btn-cards').classList.toggle('active', v === 'cards');
   }
 
-  // ── HELPERS ────────────────────────────────────────
   function esc(str) {
     if (!str) return '';
-    return String(str)
-      .replace(/&/g,'&amp;')
-      .replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;');
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   function renderStars(n) {
     if (!n) return '<span style="color:var(--cream-d)">—</span>';
-    return '<span class="stars">' +
-      '★'.repeat(n) +
-      '<span class="empty">' + '★'.repeat(5-n) + '</span>' +
-      '</span>';
+    return '<span class="stars">' + '★'.repeat(n) + '<span class="empty">' + '★'.repeat(5-n) + '</span></span>';
   }
 
   let toastTimer;
@@ -1092,6 +1202,175 @@
     t.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── BOTTLE MANAGEMENT ──────────────────────────────────
+  let currentBottleWein = null;
+  let currentFlaschen = [];
+
+  async function openBottleModal(weinId) {
+    currentBottleWein = allWeine.find(w => String(w.id) === String(weinId));
+    if (!currentBottleWein) return;
+    const label = currentBottleWein.name + (currentBottleWein.jahrgang ? ' ' + currentBottleWein.jahrgang : '');
+    document.getElementById('bottle-modal-title').textContent = label;
+    document.getElementById('bottle-einbuchen-form').style.display = 'none';
+    document.getElementById('bottle-overlay').classList.add('open');
+    await loadFlaschen(currentBottleWein.id);
+  }
+
+  function closeBottleModal() {
+    document.getElementById('bottle-overlay').classList.remove('open');
+    currentBottleWein = null; currentFlaschen = [];
+  }
+
+  function closeBottleModalOutside(e) {
+    if (e.target === document.getElementById('bottle-overlay')) closeBottleModal();
+  }
+
+  async function loadFlaschen(weinId) {
+    document.getElementById('bottle-list').innerHTML = '<div class="loading">Lade Flaschen…</div>';
+    const { data, error } = await supabase_client
+      .from('flaschen').select('*').eq('wein_id', weinId).order('eingebucht_am', { ascending: false });
+    if (error) { showToast('Fehler: ' + error.message); return; }
+    currentFlaschen = data || [];
+    const lagernd = currentFlaschen.filter(f => f.status === 'lagernd').length;
+    document.getElementById('bottle-count-hint').textContent =
+      `${lagernd} im Keller · ${currentFlaschen.length - lagernd} ausgebucht`;
+    renderFlaschen();
+  }
+
+  function renderFlaschen() {
+    const lagernd = currentFlaschen.filter(f => f.status === 'lagernd');
+    const ausgebucht = currentFlaschen.filter(f => f.status === 'ausgebucht');
+    if (lagernd.length === 0 && ausgebucht.length === 0) {
+      document.getElementById('bottle-list').innerHTML =
+        '<div class="empty-state" style="padding:2rem 0"><div class="icon">🍾</div>' +
+        '<p>Noch keine Flaschen erfasst. Klicke auf «Flasche einbuchen».</p></div>';
+      return;
+    }
+    let html = '';
+    if (lagernd.length > 0)
+      html += `<div class="section-title">Im Keller (${lagernd.length})</div><div class="bottle-list">` + lagernd.map(renderBottleItem).join('') + '</div>';
+    if (ausgebucht.length > 0)
+      html += `<div class="section-title" style="margin-top:1.25rem">Ausgebucht (${ausgebucht.length})</div><div class="bottle-list">` + ausgebucht.map(renderBottleItem).join('') + '</div>';
+    document.getElementById('bottle-list').innerHTML = html;
+  }
+
+  function renderBottleItem(f) {
+    const imgHtml = f.bild_url
+      ? `<img src="${esc(f.bild_url)}" class="bottle-thumb" onclick="openImageLightbox('${esc(f.bild_url)}')" alt="Flaschenbild" />`
+      : '<div class="bottle-thumb-placeholder">🍷</div>';
+    const einDate = f.eingebucht_am ? new Date(f.eingebucht_am).toLocaleDateString('de-CH') : '—';
+    const ausDate = f.ausgebucht_am ? new Date(f.ausgebucht_am).toLocaleDateString('de-CH') : null;
+    const isLagernd = f.status === 'lagernd';
+    const actions = isLagernd
+      ? `<button class="btn btn-success btn-sm" onclick="ausbuchenFlasche('${f.id}')">Ausbuchen</button>
+         <button class="btn btn-danger btn-sm" onclick="deleteFlasche('${f.id}')">✕</button>`
+      : `<button class="btn btn-danger btn-sm" onclick="deleteFlasche('${f.id}')">✕</button>`;
+    return `
+      <div class="bottle-item ${isLagernd ? '' : 'ausgebucht'}">
+        ${imgHtml}
+        <div class="bottle-info">
+          <div class="bottle-status">${isLagernd ? '🟢 Im Keller' : '🔴 Ausgebucht'}</div>
+          <div class="bottle-meta">Eingebucht: ${einDate}${ausDate ? ' · Ausgebucht: ' + ausDate : ''}</div>
+          ${f.notizen ? `<div class="bottle-notizen">${esc(f.notizen)}</div>` : ''}
+        </div>
+        <div class="bottle-actions">${actions}</div>
+      </div>`;
+  }
+
+  function showEinbuchenForm() {
+    document.getElementById('bottle-einbuchen-form').style.display = 'block';
+    document.getElementById('einbuchen-notizen').value = '';
+    document.getElementById('einbuchen-bild').value = '';
+    document.getElementById('einbuchen-preview').style.display = 'none';
+    document.getElementById('upload-hint-text').style.display = '';
+    document.getElementById('einbuchen-btn').disabled = false;
+    document.getElementById('einbuchen-btn').textContent = 'Einbuchen';
+  }
+
+  function hideEinbuchenForm() {
+    document.getElementById('bottle-einbuchen-form').style.display = 'none';
+  }
+
+  function handleBildPreview(input) {
+    const file = input.files[0];
+    const preview = document.getElementById('einbuchen-preview');
+    const hint = document.getElementById('upload-hint-text');
+    if (!file) { preview.style.display = 'none'; hint.style.display = ''; return; }
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    hint.style.display = 'none';
+  }
+
+  async function einbuchenFlasche() {
+    if (!currentBottleWein) return;
+    const btn = document.getElementById('einbuchen-btn');
+    btn.disabled = true; btn.textContent = 'Wird gespeichert…';
+    const notizen = document.getElementById('einbuchen-notizen').value.trim();
+    const bildFile = document.getElementById('einbuchen-bild').files[0];
+    let bild_url = null;
+    if (bildFile) {
+      const ext = bildFile.name.split('.').pop().toLowerCase();
+      const path = `${currentBottleWein.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase_client.storage.from('flaschenbilder').upload(path, bildFile);
+      if (upErr) { showToast('Bildfehler: ' + upErr.message); btn.disabled = false; btn.textContent = 'Einbuchen'; return; }
+      bild_url = supabase_client.storage.from('flaschenbilder').getPublicUrl(path).data.publicUrl;
+    }
+    const { error } = await supabase_client.from('flaschen').insert([{
+      wein_id: currentBottleWein.id, status: 'lagernd', notizen: notizen || null, bild_url,
+    }]);
+    if (error) { showToast('Fehler: ' + error.message); btn.disabled = false; btn.textContent = 'Einbuchen'; return; }
+    await syncFlaschenCount(currentBottleWein.id, 1);
+    showToast('Flasche eingebucht ✓');
+    hideEinbuchenForm();
+    await loadFlaschen(currentBottleWein.id);
+  }
+
+  async function ausbuchenFlasche(flascheId) {
+    const { error } = await supabase_client.from('flaschen')
+      .update({ status: 'ausgebucht', ausgebucht_am: new Date().toISOString() }).eq('id', flascheId);
+    if (error) { showToast('Fehler: ' + error.message); return; }
+    await syncFlaschenCount(currentBottleWein.id, -1);
+    showToast('Flasche ausgebucht ✓');
+    await loadFlaschen(currentBottleWein.id);
+  }
+
+  async function deleteFlasche(flascheId) {
+    if (!confirm('Flascheneintrag wirklich löschen?')) return;
+    const flasche = currentFlaschen.find(f => String(f.id) === String(flascheId));
+    if (flasche?.bild_url) {
+      try {
+        const url = new URL(flasche.bild_url);
+        const parts = url.pathname.split('/object/public/flaschenbilder/');
+        if (parts[1]) await supabase_client.storage.from('flaschenbilder').remove([decodeURIComponent(parts[1])]);
+      } catch (_) {}
+    }
+    const { error } = await supabase_client.from('flaschen').delete().eq('id', flascheId);
+    if (error) { showToast('Fehler: ' + error.message); return; }
+    if (flasche?.status === 'lagernd') await syncFlaschenCount(currentBottleWein.id, -1);
+    showToast('Eintrag gelöscht.');
+    await loadFlaschen(currentBottleWein.id);
+  }
+
+  async function syncFlaschenCount(weinId, delta) {
+    const w = allWeine.find(w => String(w.id) === String(weinId));
+    if (!w) return;
+    const newCount = Math.max(0, (w.flaschen || 0) + delta);
+    await supabase_client.from('weine').update({ flaschen: newCount }).eq('id', weinId);
+    w.flaschen = newCount;
+    if (currentBottleWein && String(currentBottleWein.id) === String(weinId)) currentBottleWein.flaschen = newCount;
+    applyFilters(); updateStats();
+  }
+
+  function openImageLightbox(url) {
+    const lb = document.createElement('div');
+    lb.className = 'lightbox';
+    const img = document.createElement('img');
+    img.src = url; img.alt = 'Flaschenbild';
+    lb.appendChild(img);
+    lb.onclick = () => document.body.removeChild(lb);
+    document.body.appendChild(lb);
   }
 </script>
 </body>
