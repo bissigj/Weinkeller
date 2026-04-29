@@ -10,20 +10,20 @@
 
   <style>
     :root {
-      --burgundy:   #5a0e1a;
-      --burgundy-d: #3d0910;
-      --burgundy-l: #7a1a28;
-      --gold:       #c9a84c;
-      --gold-l:     #e0c06a;
-      --cream:      #f5f0e8;
-      --cream-d:    #ede5d0;
-      --ink:        #1a0f08;
-      --muted:      #8a7060;
-      --bg:         #faf7f2;
+      --burgundy:   #2D4262;
+      --burgundy-d: #363237;
+      --burgundy-l: #3d5478;
+      --gold:       #D09683;
+      --gold-l:     #ddb09f;
+      --cream:      #f2ede9;
+      --cream-d:    #e4dbd5;
+      --ink:        #1e1a1d;
+      --muted:      #73605B;
+      --bg:         #f7f3f0;
       --white:      #ffffff;
-      --red:        #c0392b;
-      --shadow:     0 2px 16px rgba(90,14,26,0.10);
-      --shadow-lg:  0 8px 40px rgba(90,14,26,0.18);
+      --red:        #b04040;
+      --shadow:     0 2px 16px rgba(45,66,98,0.10);
+      --shadow-lg:  0 8px 40px rgba(54,50,55,0.18);
       --radius:     12px;
       --radius-sm:  6px;
     }
@@ -40,8 +40,8 @@
       padding: 1.5rem;
       background: var(--burgundy-d);
       background-image:
-        radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.10) 0%, transparent 55%),
-        radial-gradient(ellipse at 80% 80%, rgba(122,26,40,0.5) 0%, transparent 50%);
+        radial-gradient(ellipse at 20% 20%, rgba(208,150,131,0.12) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 80%, rgba(54,50,55,0.6) 0%, transparent 50%);
     }
 
     .auth-box {
@@ -78,25 +78,25 @@
     }
     .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
     .btn-primary { background: var(--gold); color: var(--burgundy-d); }
-    .btn-primary:hover:not(:disabled) { background: var(--gold-l); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(201,168,76,0.3); }
+    .btn-primary:hover:not(:disabled) { background: var(--gold-l); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(208,150,131,0.3); }
     .btn-full { width: 100%; justify-content: center; margin-top: 0.5rem; }
     .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--cream-d); font-weight: 400; }
     .btn-ghost:hover { border-color: var(--burgundy-l); color: var(--burgundy); }
-    .btn-danger { background: transparent; color: var(--red); border: 1px solid #e8c0bb; }
-    .btn-danger:hover { background: #fdf2f1; }
+    .btn-danger { background: transparent; color: var(--red); border: 1px solid #dbb8b8; }
+    .btn-danger:hover { background: #faf0f0; }
     .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
-    .btn-logout { background: transparent; color: rgba(245,240,232,0.7); border: 1px solid rgba(201,168,76,0.3); font-size: 0.78rem; padding: 5px 12px; font-weight: 400; }
+    .btn-logout { background: transparent; color: rgba(245,240,232,0.7); border: 1px solid rgba(208,150,131,0.3); font-size: 0.78rem; padding: 5px 12px; font-weight: 400; }
     .btn-logout:hover { border-color: var(--gold); color: var(--gold); }
 
     /* ── HEADER ────────────────────────────────────── */
     header {
       background: var(--burgundy-d);
-      background-image: radial-gradient(ellipse at 20% 50%, rgba(201,168,76,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(122,26,40,0.5) 0%, transparent 50%);
+      background-image: radial-gradient(ellipse at 20% 50%, rgba(208,150,131,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(45,66,98,0.5) 0%, transparent 50%);
       color: var(--cream); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between;
       height: 64px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.3);
     }
     .header-brand { display: flex; align-items: center; gap: 10px; }
-    .header-icon { font-size: 1.4rem; filter: drop-shadow(0 0 8px rgba(201,168,76,0.4)); }
+    .header-icon { font-size: 1.4rem; filter: drop-shadow(0 0 8px rgba(208,150,131,0.4)); }
     .header-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; letter-spacing: 0.04em; }
     .header-title span { color: var(--gold); }
     .header-actions { display: flex; align-items: center; gap: 10px; }
@@ -108,7 +108,7 @@
     /* ── STATS ─────────────────────────────────────── */
     .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
     .stat-card { background: var(--white); border: 1px solid var(--cream-d); border-radius: var(--radius); padding: 1rem 1.2rem; box-shadow: var(--shadow); position: relative; overflow: hidden; }
-    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--burgundy), var(--gold)); }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--burgundy-d), var(--burgundy), var(--gold)); }
     .stat-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
     .stat-value { font-family: 'Playfair Display', serif; font-size: 1.9rem; color: var(--burgundy); line-height: 1; }
     .stat-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
@@ -137,7 +137,7 @@
     .td-name { font-weight: 700; color: var(--burgundy); }
     .td-sub { font-size: 0.76rem; color: var(--muted); }
     .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
-    .badge-rot { background: #fce8ea; color: var(--burgundy); }
+    .badge-rot { background: #e8edf5; color: var(--burgundy); }
     .badge-other { background: var(--cream-d); color: var(--muted); }
     .stars { color: var(--gold); letter-spacing: -2px; }
     .stars .empty { color: var(--cream-d); }
@@ -148,11 +148,11 @@
     .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1.25rem; }
     .wine-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--cream-d); box-shadow: var(--shadow); overflow: hidden; transition: transform 0.18s, box-shadow 0.18s; }
     .wine-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
-    .card-header { background: var(--burgundy-d); background-image: radial-gradient(ellipse at 80% 0%, rgba(201,168,76,0.15) 0%, transparent 60%); padding: 1rem 1.1rem 0.85rem; color: var(--cream); position: relative; }
+    .card-header { background: var(--burgundy-d); background-image: radial-gradient(ellipse at 80% 0%, rgba(208,150,131,0.15) 0%, transparent 60%); padding: 1rem 1.1rem 0.85rem; color: var(--cream); position: relative; }
     .card-jahrgang { font-family: 'Playfair Display', serif; font-size: 0.82rem; color: var(--gold); letter-spacing: 0.08em; margin-bottom: 2px; }
     .card-name { font-family: 'Playfair Display', serif; font-size: 1rem; line-height: 1.3; }
     .card-weingut { font-size: 0.75rem; color: rgba(245,240,232,0.6); margin-top: 2px; }
-    .card-flaschen { position: absolute; top: 0.85rem; right: 0.85rem; background: rgba(201,168,76,0.2); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 3px 9px; font-family: 'Playfair Display', serif; font-size: 1.15rem; color: var(--gold); text-align: center; line-height: 1; }
+    .card-flaschen { position: absolute; top: 0.85rem; right: 0.85rem; background: rgba(208,150,131,0.2); border: 1px solid rgba(208,150,131,0.4); border-radius: 8px; padding: 3px 9px; font-family: 'Playfair Display', serif; font-size: 1.15rem; color: var(--gold); text-align: center; line-height: 1; }
     .card-flaschen small { display: block; font-family: 'Lato', sans-serif; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; }
     .card-body { padding: 0.9rem 1.1rem; }
     .card-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 0.65rem; }
