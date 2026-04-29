@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weinkeller</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍷</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --burgundy:   #5a0e1a;
+      --burgundy-d: #3d0910;
+      --burgundy-l: #7a1a28;
+      --gold:       #c9a84c;
+      --gold-l:     #e0c06a;
+      --cream:      #f5f0e8;
+      --cream-d:    #ede5d0;
+      --ink:        #1a0f08;
+      --muted:      #8a7060;
+      --bg:         #faf7f2;
+      --white:      #ffffff;
+      --red:        #c0392b;
+      --shadow:     0 2px 16px rgba(90,14,26,0.10);
+      --shadow-lg:  0 8px 40px rgba(90,14,26,0.18);
+      --radius:     12px;
+      --radius-sm:  6px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Lato', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+    /* ── AUTH ───────────────────────────────────────── */
+    .auth-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: var(--burgundy-d);
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.10) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 80%, rgba(122,26,40,0.5) 0%, transparent 50%);
+    }
+
+    .auth-box {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 2rem 2rem 1.75rem;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .auth-icon { display: block; font-size: 2rem; margin-bottom: 1rem; }
+    .auth-box h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--burgundy-d); margin-bottom: 0.25rem; }
+    .auth-box p { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.5; }
+
+    .auth-field { margin-bottom: 0.875rem; }
+    .auth-field label { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .auth-field input { width: 100%; padding: 9px 12px; border: 1px solid var(--cream-d); border-radius: var(--radius-sm); font-family: 'Lato', sans-serif; font-size: 0.875rem; color: var(--ink); background: var(--bg); transition: border-color 0.15s; }
+    .auth-field input:focus { outline: none; border-color: var(--burgundy-l); background: var(--white); }
+
+    .auth-err { font-size: 0.75rem; color: var(--red); min-height: 18px; margin-top: 0.5rem; }
+    .auth-err.ok { color: #2e7d32; }
+
+    .auth-switch { font-size: 0.78rem; color: var(--muted); margin-top: 1.1rem; text-align: center; }
+    .auth-switch a { color: var(--burgundy); cursor: pointer; font-weight: 700; }
+    .auth-switch a:hover { text-decoration: underline; }
+
+    /* ── BUTTONS ────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 18px; border-radius: var(--radius-sm); border: none;
+      cursor: pointer; font-family: 'Lato', sans-serif; font-size: 0.875rem;
+      font-weight: 700; letter-spacing: 0.04em; transition: all 0.18s ease;
+    }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+    .btn-primary { background: var(--gold); color: var(--burgundy-d); }
+    .btn-primary:hover:not(:disabled) { background: var(--gold-l); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(201,168,76,0.3); }
+    .btn-full { width: 100%; justify-content: center; margin-top: 0.5rem; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--cream-d); font-weight: 400; }
+    .btn-ghost:hover { border-color: var(--burgundy-l); color: var(--burgundy); }
+    .btn-danger { background: transparent; color: var(--red); border: 1px solid #e8c0bb; }
+    .btn-danger:hover { background: #fdf2f1; }
+    .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+    .btn-logout { background: transparent; color: rgba(245,240,232,0.7); border: 1px solid rgba(201,168,76,0.3); font-size: 0.78rem; padding: 5px 12px; font-weight: 400; }
+    .btn-logout:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* ── HEADER ────────────────────────────────────── */
+    header {
+      background: var(--burgundy-d);
+      background-image: radial-gradient(ellipse at 20% 50%, rgba(201,168,76,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(122,26,40,0.5) 0%, transparent 50%);
+      color: var(--cream); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between;
+      height: 64px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    }
+    .header-brand { display: flex; align-items: center; gap: 10px; }
+    .header-icon { font-size: 1.4rem; filter: drop-shadow(0 0 8px rgba(201,168,76,0.4)); }
+    .header-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; letter-spacing: 0.04em; }
+    .header-title span { color: var(--gold); }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .user-pill { font-size: 0.75rem; color: rgba(245,240,232,0.55); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ── LAYOUT ────────────────────────────────────── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* ── STATS ─────────────────────────────────────── */
+    .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--white); border: 1px solid var(--cream-d); border-radius: var(--radius); padding: 1rem 1.2rem; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--burgundy), var(--gold)); }
+    .stat-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .stat-value { font-family: 'Playfair Display', serif; font-size: 1.9rem; color: var(--burgundy); line-height: 1; }
+    .stat-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── TOOLBAR ────────────────────────────────────── */
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 1.5rem; }
+    .search-wrap { flex: 1; min-width: 200px; position: relative; }
+    .search-wrap input { width: 100%; padding: 9px 14px 9px 34px; border: 1px solid var(--cream-d); border-radius: var(--radius-sm); font-family: 'Lato', sans-serif; font-size: 0.875rem; background: var(--white); color: var(--ink); transition: border-color 0.15s; }
+    .search-wrap input:focus { outline: none; border-color: var(--burgundy-l); }
+    .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.85rem; }
+    select.filter { padding: 9px 12px; border: 1px solid var(--cream-d); border-radius: var(--radius-sm); font-family: 'Lato', sans-serif; font-size: 0.875rem; background: var(--white); color: var(--ink); cursor: pointer; }
+    select.filter:focus { outline: none; border-color: var(--burgundy-l); }
+    .view-toggle { display: flex; border: 1px solid var(--cream-d); border-radius: var(--radius-sm); overflow: hidden; }
+    .view-toggle button { padding: 8px 13px; border: none; background: var(--white); cursor: pointer; font-size: 0.95rem; color: var(--muted); transition: all 0.15s; }
+    .view-toggle button.active { background: var(--burgundy); color: var(--cream); }
+
+    /* ── TABLE ─────────────────────────────────────── */
+    .table-wrap { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--cream-d); }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--burgundy-d); color: var(--cream); }
+    th { padding: 11px 14px; text-align: left; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid var(--cream-d); transition: background 0.12s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--cream); }
+    td { padding: 10px 14px; font-size: 0.875rem; vertical-align: middle; }
+    .td-name { font-weight: 700; color: var(--burgundy); }
+    .td-sub { font-size: 0.76rem; color: var(--muted); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+    .badge-rot { background: #fce8ea; color: var(--burgundy); }
+    .badge-other { background: var(--cream-d); color: var(--muted); }
+    .stars { color: var(--gold); letter-spacing: -2px; }
+    .stars .empty { color: var(--cream-d); }
+    .flaschen-count { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--burgundy); }
+    .actions-cell { display: flex; gap: 6px; white-space: nowrap; }
+
+    /* ── CARDS ─────────────────────────────────────── */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1.25rem; }
+    .wine-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--cream-d); box-shadow: var(--shadow); overflow: hidden; transition: transform 0.18s, box-shadow 0.18s; }
+    .wine-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .card-header { background: var(--burgundy-d); background-image: radial-gradient(ellipse at 80% 0%, rgba(201,168,76,0.15) 0%, transparent 60%); padding: 1rem 1.1rem 0.85rem; color: var(--cream); position: relative; }
+    .card-jahrgang { font-family: 'Playfair Display', serif; font-size: 0.82rem; color: var(--gold); letter-spacing: 0.08em; margin-bottom: 2px; }
+    .card-name { font-family: 'Playfair Display', serif; font-size: 1rem; line-height: 1.3; }
+    .card-weingut { font-size: 0.75rem; color: rgba(245,240,232,0.6); margin-top: 2px; }
+    .card-flaschen { position: absolute; top: 0.85rem; right: 0.85rem; background: rgba(201,168,76,0.2); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 3px 9px; font-family: 'Playfair Display', serif; font-size: 1.15rem; color: var(--gold); text-align: center; line-height: 1; }
+    .card-flaschen small { display: block; font-family: 'Lato', sans-serif; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; }
+    .card-body { padding: 0.9rem 1.1rem; }
+    .card-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 0.65rem; }
+    .card-detail { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); margin-bottom: 3px; }
+    .card-detail span:last-child { color: var(--ink); font-weight: 600; }
+    .card-notizen { font-size: 0.76rem; color: var(--muted); font-style: italic; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--cream-d); line-height: 1.4; }
+    .card-footer { padding: 0.65rem 1.1rem; border-top: 1px solid var(--cream-d); display: flex; gap: 6px; justify-content: flex-end; }
+
+    /* ── MODAL ─────────────────────────────────────── */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(26,15,8,0.65); backdrop-filter: blur(3px); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
+    .overlay.open { display: flex; }
+    .modal { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { background: var(--burgundy-d); color: var(--cream); padding: 1.1rem 1.4rem; display: flex; align-items: center; justify-content: space-between; border-radius: var(--radius) var(--radius) 0 0; position: sticky; top: 0; z-index: 1; }
+    .modal-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+    .modal-close { background: none; border: none; color: var(--cream); font-size: 1.3rem; cursor: pointer; opacity: 0.7; line-height: 1; }
+    .modal-close:hover { opacity: 1; }
+    .modal-body { padding: 1.4rem; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    input[type="text"], input[type="number"], textarea, select.form-select { padding: 8px 11px; border: 1px solid var(--cream-d); border-radius: var(--radius-sm); font-family: 'Lato', sans-serif; font-size: 0.875rem; color: var(--ink); background: var(--bg); transition: border-color 0.15s; }
+    input:focus, textarea:focus, select.form-select:focus { outline: none; border-color: var(--burgundy-l); background: var(--white); }
+    textarea { resize: vertical; min-height: 68px; }
+    .star-input { display: flex; gap: 4px; margin-top: 4px; }
+    .star-input span { font-size: 1.35rem; cursor: pointer; color: var(--cream-d); transition: color 0.1s, transform 0.1s; user-select: none; }
+    .star-input span.active { color: var(--gold); }
+    .star-input span:hover { transform: scale(1.15); }
+    .modal-footer { padding: 0.9rem 1.4rem; border-top: 1px solid var(--cream-d); display: flex; gap: 8px; justify-content: flex-end; }
+
+    /* ── MISC ──────────────────────────────────────── */
+    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+    .empty-state .icon { font-size: 2.8rem; margin-bottom: 0.75rem; opacity: 0.35; }
+    .empty-state p { font-family: 'Playfair Display', serif; font-size: 1rem; }
+    .loading { text-align: center; padding: 3rem; color: var(--muted); font-style: italic; }
+
+    #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--burgundy-d); color: var(--cream); padding: 10px 18px; border-radius: var(--radius-sm); font-size: 0.875rem; box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(10px); transition: all 0.25s; z-index: 400; max-width: 300px; }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 640px) {
+      header { padding: 0 1rem; }
+      .header-title { font-size: 1.1rem; }
+      .user-pill { display: none; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: 1; }
+      th:nth-child(n+4):not(:last-child) { display: none; }
+      td:nth-child(n+4):not(:last-child) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="auth-wrap" id="login-screen" style="display:none">
+  <div class="auth-box">
+    <span class="auth-icon">🍷</span>
+    <h2>Weinkeller</h2>
+    <p>Melde dich an, um deinen Keller zu verwalten.</p>
+    <div class="auth-field">
+      <label>E-Mail</label>
+      <input type="email" id="l-email" placeholder="name@beispiel.ch" />
+    </div>
+    <div class="auth-field">
+      <label>Passwort</label>
+      <input type="password" id="l-pw" placeholder="Passwort" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <div class="auth-err" id="l-err"></div>
+    <button class="btn btn-primary btn-full" id="l-btn" onclick="doLogin()">Anmelden</button>
+    <div class="auth-switch">Noch kein Konto? <a onclick="showRegister()">Registrieren</a></div>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div class="auth-wrap" id="register-screen" style="display:none">
+  <div class="auth-box">
+    <span class="auth-icon">🍷</span>
+    <h2>Konto erstellen</h2>
+    <p>Erstelle ein Konto für deinen Weinkeller.</p>
+    <div class="auth-field">
+      <label>E-Mail</label>
+      <input type="email" id="r-email" placeholder="name@beispiel.ch" />
+    </div>
+    <div class="auth-field">
+      <label>Passwort</label>
+      <input type="password" id="r-pw" placeholder="Mindestens 6 Zeichen" onkeydown="if(event.key==='Enter')doRegister()" />
+    </div>
+    <div class="auth-err" id="r-err"></div>
+    <button class="btn btn-primary btn-full" id="r-btn" onclick="doRegister()">Konto erstellen</button>
+    <div class="auth-switch">Bereits registriert? <a onclick="showLogin()">Anmelden</a></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main-screen" style="display:none">
+  <header>
+    <div class="header-brand">
+      <span class="header-icon">🍷</span>
+      <span class="header-title">Wein<span>keller</span></span>
+    </div>
+    <div class="header-actions">
+      <span class="user-pill" id="user-email-display"></span>
+      <button class="btn btn-logout" onclick="doLogout()">Abmelden</button>
+      <button class="btn btn-primary" onclick="openModal()">＋ Wein</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">Einträge</div>
+        <div class="stat-value" id="stat-eintraege">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Flaschen total</div>
+        <div class="stat-value" id="stat-flaschen">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Wert (CHF)</div>
+        <div class="stat-value" id="stat-wert">—</div>
+        <div class="stat-sub">Gesamtkaufwert</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ø Bewertung</div>
+        <div class="stat-value" id="stat-bewertung">—</div>
+        <div class="stat-sub">von 5 Sternen</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Name, Weingut, Rebsorte…" oninput="applyFilters()" />
+      </div>
+      <select class="filter" id="filter-typ" onchange="applyFilters()">
+        <option value="">Alle Typen</option>
+        <option>Rotwein</option>
+        <option>Weisswein</option>
+        <option>Rosé</option>
+        <option>Schaumwein</option>
+        <option>Süsswein</option>
+      </select>
+      <select class="filter" id="sort-by" onchange="applyFilters()">
+        <option value="name">Name</option>
+        <option value="jahrgang">Jahrgang</option>
+        <option value="flaschen">Flaschen</option>
+        <option value="bewertung">Bewertung</option>
+        <option value="kaufpreis">Preis</option>
+      </select>
+      <div class="view-toggle">
+        <button id="btn-table" class="active" onclick="setView('table')">☰</button>
+        <button id="btn-cards" onclick="setView('cards')">⊞</button>
+      </div>
+    </div>
+
+    <div id="view-table">
+      <div class="table-wrap">
+        <div id="loading" class="loading">Lade Weinkeller…</div>
+        <table id="wine-table" style="display:none">
+          <thead>
+            <tr>
+              <th>Name &amp; Weingut</th>
+              <th>Jahrgang</th>
+              <th>Rebsorte</th>
+              <th>Flaschen</th>
+              <th>Preis</th>
+              <th>Bewertung</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+        <div id="empty-table" class="empty-state" style="display:none">
+          <div class="icon">🍾</div><p>Noch keine Weine erfasst.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-cards" style="display:none">
+      <div class="card-grid" id="card-grid"></div>
+      <div id="empty-cards" class="empty-state" style="display:none">
+        <div class="icon">🍾</div><p>Noch keine Weine erfasst.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WEIN MODAL -->
+<div class="overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Wein erfassen</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Weinname *</label>
+          <input type="text" id="f-name" placeholder="z.B. Château Margaux" />
+        </div>
+        <div class="form-group">
+          <label>Weingut / Produzent</label>
+          <input type="text" id="f-weingut" placeholder="z.B. Domaine Leflaive" />
+        </div>
+        <div class="form-group">
+          <label>Jahrgang</label>
+          <input type="number" id="f-jahrgang" placeholder="z.B. 2018" min="1900" max="2099" />
+        </div>
+        <div class="form-group">
+          <label>Rebsorte</label>
+          <input type="text" id="f-rebsorte" placeholder="z.B. Pinot Noir" />
+        </div>
+        <div class="form-group">
+          <label>Weintyp</label>
+          <select class="form-select" id="f-typ">
+            <option value="">— wählen —</option>
+            <option>Rotwein</option>
+            <option>Weisswein</option>
+            <option>Rosé</option>
+            <option>Schaumwein</option>
+            <option>Süsswein</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Anzahl Flaschen *</label>
+          <input type="number" id="f-flaschen" value="1" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Kaufpreis (CHF)</label>
+          <input type="number" id="f-kaufpreis" placeholder="0.00" step="0.01" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Bewertung</label>
+          <div class="star-input" id="star-input">
+            <span data-v="1" onclick="setStar(1)">★</span>
+            <span data-v="2" onclick="setStar(2)">★</span>
+            <span data-v="3" onclick="setStar(3)">★</span>
+            <span data-v="4" onclick="setStar(4)">★</span>
+            <span data-v="5" onclick="setStar(5)">★</span>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label>Notizen</label>
+          <textarea id="f-notizen" placeholder="Tasting-Notizen, Anlässe, persönliche Eindrücke…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Abbrechen</button>
+      <button class="btn btn-primary" id="save-btn" onclick="saveWein()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // ── CONFIG ─────────────────────────────────────────
+  const SUPA_URL = 'https://kxluqqcpyjqkuhunbcnr.supabase.co';
+  const SUPA_KEY = 'sb_publishable_miwPxtHfQqAvPqa3qIj6GQ_ypKLIaJq';
+
+  // ── HTTP ────────────────────────────────────────────
+  let H = {
+    'Content-Type': 'application/json',
+    'apikey': SUPA_KEY,
+    'Authorization': 'Bearer ' + SUPA_KEY
+  };
+  function setToken(t) { H['Authorization'] = 'Bearer ' + t; }
+
+  // ── DB ──────────────────────────────────────────────
+  async function sbGet(table, filter = '') {
+    const r = await fetch(`${SUPA_URL}/rest/v1/${table}?${filter}`, { headers: H });
+    if (!r.ok) { console.error('sbGet', table, r.status, await r.text()); return []; }
+    return r.json();
+  }
+  async function sbInsert(table, body) {
+    const r = await fetch(`${SUPA_URL}/rest/v1/${table}`, {
+      method: 'POST', headers: { ...H, 'Prefer': 'return=representation' }, body: JSON.stringify(body)
+    });
+    if (!r.ok) { console.error('sbInsert', table, r.status, await r.text()); return null; }
+    return r.json();
+  }
+  async function sbUpdate(table, id, body) {
+    const r = await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`, {
+      method: 'PATCH', headers: { ...H, 'Prefer': 'return=representation' }, body: JSON.stringify(body)
+    });
+    if (!r.ok) { console.error('sbUpdate', table, r.status, await r.text()); return null; }
+    return r.json();
+  }
+  async function sbDelete(table, id) {
+    const r = await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers: H });
+    if (!r.ok) console.error('sbDelete', table, r.status, await r.text());
+  }
+
+  // ── AUTH ────────────────────────────────────────────
+  let session = null;
+  let refreshTimer = null;
+
+  function scheduleRefresh(s) {
+    clearTimeout(refreshTimer);
+    const refreshIn = s.expires_at * 1000 - Date.now() - 2 * 60 * 1000;
+    if (refreshIn <= 0) { doRefresh(s.refresh_token); return; }
+    refreshTimer = setTimeout(() => doRefresh(s.refresh_token), refreshIn);
+  }
+
+  async function doRefresh(rt) {
+    try {
+      const r = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=refresh_token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY },
+        body: JSON.stringify({ refresh_token: rt })
+      });
+      const d = await r.json();
+      if (d.access_token) {
+        session = d; setToken(d.access_token);
+        localStorage.setItem('wk_session', JSON.stringify(d));
+        scheduleRefresh(d);
+      } else { doLogout(); }
+    } catch(e) { console.error('Refresh failed', e); }
+  }
+
+  async function doLogin() {
+    const email = document.getElementById('l-email').value.trim();
+    const pw = document.getElementById('l-pw').value;
+    const errEl = document.getElementById('l-err');
+    const btn = document.getElementById('l-btn');
+    errEl.textContent = ''; errEl.className = 'auth-err';
+    btn.disabled = true; btn.textContent = 'Anmelden…';
+    try {
+      const r = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY },
+        body: JSON.stringify({ email, password: pw })
+      });
+      const d = await r.json();
+      if (d.error || d.error_code) {
+        errEl.textContent = d.error_description || d.msg || d.error;
+        btn.disabled = false; btn.textContent = 'Anmelden'; return;
+      }
+      session = d; setToken(d.access_token); scheduleRefresh(d);
+      await onLoggedIn();
+    } catch(e) {
+      errEl.textContent = 'Verbindungsfehler: ' + e.message;
+      btn.disabled = false; btn.textContent = 'Anmelden';
+    }
+  }
+
+  async function doRegister() {
+    const email = document.getElementById('r-email').value.trim();
+    const pw = document.getElementById('r-pw').value;
+    const errEl = document.getElementById('r-err');
+    const btn = document.getElementById('r-btn');
+    errEl.textContent = ''; errEl.className = 'auth-err';
+    btn.disabled = true; btn.textContent = 'Erstellen…';
+    try {
+      const r = await fetch(`${SUPA_URL}/auth/v1/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY },
+        body: JSON.stringify({ email, password: pw })
+      });
+      const d = await r.json();
+      if (d.error || d.error_code) {
+        errEl.textContent = d.error_description || d.msg || d.error;
+        btn.disabled = false; btn.textContent = 'Konto erstellen'; return;
+      }
+      if (d.access_token) {
+        session = d; setToken(d.access_token); scheduleRefresh(d);
+        await onLoggedIn(); return;
+      }
+      errEl.className = 'auth-err ok';
+      errEl.textContent = '✓ Konto erstellt – prüfe deine E-Mails zur Bestätigung.';
+      btn.disabled = false; btn.textContent = 'Konto erstellen';
+    } catch(e) {
+      errEl.textContent = 'Verbindungsfehler: ' + e.message;
+      btn.disabled = false; btn.textContent = 'Konto erstellen';
+    }
+  }
+
+  function doLogout() {
+    session = null; setToken(SUPA_KEY);
+    localStorage.removeItem('wk_session');
+    document.getElementById('main-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('l-pw').value = '';
+    document.getElementById('l-err').textContent = '';
+    document.getElementById('l-btn').disabled = false;
+    document.getElementById('l-btn').textContent = 'Anmelden';
+  }
+
+  function showRegister() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('register-screen').style.display = 'flex';
+  }
+  function showLogin() {
+    document.getElementById('register-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+
+  async function onLoggedIn() {
+    localStorage.setItem('wk_session', JSON.stringify(session));
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('register-screen').style.display = 'none';
+    document.getElementById('main-screen').style.display = 'block';
+    document.getElementById('user-email-display').textContent = session.user?.email || '';
+    await loadWeine();
+  }
+
+  async function tryRestoreSession() {
+    try {
+      const saved = localStorage.getItem('wk_session');
+      if (saved) {
+        const s = JSON.parse(saved);
+        if (s.access_token && s.expires_at && Date.now() / 1000 < s.expires_at) {
+          session = s; setToken(s.access_token); scheduleRefresh(s);
+          await onLoggedIn(); return true;
+        }
+      }
+    } catch(e) {}
+    return false;
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const ok = await tryRestoreSession();
+    if (!ok) document.getElementById('login-screen').style.display = 'flex';
+  });
+
+  // ── DATA ────────────────────────────────────────────
+  let allWeine = [], filteredWeine = [];
+
+  async function loadWeine() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('wine-table').style.display = 'none';
+    document.getElementById('empty-table').style.display = 'none';
+    const data = await sbGet('weine', 'order=name.asc');
+    document.getElementById('loading').style.display = 'none';
+    allWeine = Array.isArray(data) ? data : [];
+    applyFilters();
+    updateStats();
+  }
+
+  function applyFilters() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const typ = document.getElementById('filter-typ').value;
+    const sort = document.getElementById('sort-by').value;
+    filteredWeine = allWeine.filter(w => {
+      const matchQ = !q || (w.name||'').toLowerCase().includes(q) || (w.weingut||'').toLowerCase().includes(q) || (w.rebsorte||'').toLowerCase().includes(q);
+      const matchTyp = !typ || (w.typ||'') === typ;
+      return matchQ && matchTyp;
+    });
+    filteredWeine.sort((a, b) => {
+      switch (sort) {
+        case 'jahrgang':  return (b.jahrgang||0)  - (a.jahrgang||0);
+        case 'flaschen':  return (b.flaschen||0)  - (a.flaschen||0);
+        case 'bewertung': return (b.bewertung||0) - (a.bewertung||0);
+        case 'kaufpreis': return (b.kaufpreis||0) - (a.kaufpreis||0);
+        default:          return (a.name||'').localeCompare(b.name||'', 'de');
+      }
+    });
+    renderTable(); renderCards(); updateStats();
+  }
+
+  function updateStats() {
+    const flaschen = allWeine.reduce((s,w)=>s+(w.flaschen||0),0);
+    const wert = allWeine.reduce((s,w)=>s+(w.flaschen||0)*(w.kaufpreis||0),0);
+    const bew = allWeine.filter(w=>w.bewertung);
+    const avg = bew.length ? (bew.reduce((s,w)=>s+w.bewertung,0)/bew.length).toFixed(1) : '—';
+    document.getElementById('stat-eintraege').textContent = allWeine.length;
+    document.getElementById('stat-flaschen').textContent = flaschen;
+    document.getElementById('stat-wert').textContent = wert>0 ? wert.toLocaleString('de-CH',{maximumFractionDigits:0}) : '—';
+    document.getElementById('stat-bewertung').textContent = avg!=='—' ? avg+' ★' : '—';
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('table-body');
+    const table = document.getElementById('wine-table');
+    const empty = document.getElementById('empty-table');
+    if (!filteredWeine.length) { table.style.display='none'; empty.style.display='block'; return; }
+    table.style.display='table'; empty.style.display='none';
+    tbody.innerHTML = filteredWeine.map(w=>`
+      <tr>
+        <td><div class="td-name">${esc(w.name)}</div>${w.weingut?`<div class="td-sub">${esc(w.weingut)}</div>`:''}</td>
+        <td>${w.jahrgang||'—'}</td>
+        <td>${w.rebsorte?`<span class="badge badge-rot">${esc(w.rebsorte)}</span>`:'—'}</td>
+        <td><span class="flaschen-count">${w.flaschen}</span></td>
+        <td>${w.kaufpreis?`CHF ${parseFloat(w.kaufpreis).toFixed(2)}`:'—'}</td>
+        <td>${renderStars(w.bewertung)}</td>
+        <td><div class="actions-cell">
+          <button class="btn btn-ghost btn-sm" onclick="editWein('${w.id}')">✎</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteWein('${w.id}','${esc(w.name)}')">✕</button>
+        </div></td>
+      </tr>`).join('');
+  }
+
+  function renderCards() {
+    const grid = document.getElementById('card-grid');
+    const empty = document.getElementById('empty-cards');
+    if (!filteredWeine.length) { grid.innerHTML=''; empty.style.display='block'; return; }
+    empty.style.display='none';
+    grid.innerHTML = filteredWeine.map(w=>`
+      <div class="wine-card">
+        <div class="card-header">
+          ${w.jahrgang?`<div class="card-jahrgang">${w.jahrgang}</div>`:''}
+          <div class="card-name">${esc(w.name)}</div>
+          ${w.weingut?`<div class="card-weingut">${esc(w.weingut)}</div>`:''}
+          <div class="card-flaschen">${w.flaschen}<small>Fl.</small></div>
+        </div>
+        <div class="card-body">
+          <div class="card-meta">
+            ${w.rebsorte?`<span class="badge badge-rot">${esc(w.rebsorte)}</span>`:''}
+            ${w.typ?`<span class="badge badge-other">${esc(w.typ)}</span>`:''}
+          </div>
+          ${w.kaufpreis?`<div class="card-detail"><span>Kaufpreis</span><span>CHF ${parseFloat(w.kaufpreis).toFixed(2)}</span></div>`:''}
+          ${w.bewertung?`<div class="card-detail"><span>Bewertung</span><span>${renderStars(w.bewertung)}</span></div>`:''}
+          ${w.notizen?`<div class="card-notizen">${esc(w.notizen)}</div>`:''}
+        </div>
+        <div class="card-footer">
+          <button class="btn btn-ghost btn-sm" onclick="editWein('${w.id}')">✎ Bearbeiten</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteWein('${w.id}','${esc(w.name)}')">✕</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── MODAL ───────────────────────────────────────────
+  let editId = null, starValue = 0;
+
+  function openModal(wein=null) {
+    editId = wein ? wein.id : null;
+    starValue = 0;
+    document.getElementById('modal-title').textContent = wein ? 'Wein bearbeiten' : 'Wein erfassen';
+    document.getElementById('f-name').value = wein?.name||'';
+    document.getElementById('f-weingut').value = wein?.weingut||'';
+    document.getElementById('f-jahrgang').value = wein?.jahrgang||'';
+    document.getElementById('f-rebsorte').value = wein?.rebsorte||'';
+    document.getElementById('f-typ').value = wein?.typ||'';
+    document.getElementById('f-flaschen').value = wein?.flaschen??1;
+    document.getElementById('f-kaufpreis').value = wein?.kaufpreis||'';
+    document.getElementById('f-notizen').value = wein?.notizen||'';
+    document.getElementById('save-btn').disabled = false;
+    document.getElementById('save-btn').textContent = 'Speichern';
+    if (wein?.bewertung) setStar(wein.bewertung); else updateStarUI(0);
+    document.getElementById('modal-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('f-name').focus(), 100);
+  }
+
+  function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editId=null; }
+  function closeModalOutside(e) { if (e.target===document.getElementById('modal-overlay')) closeModal(); }
+  function setStar(v) { starValue=v; updateStarUI(v); }
+  function updateStarUI(v) {
+    document.querySelectorAll('#star-input span').forEach(s=>s.classList.toggle('active',parseInt(s.dataset.v)<=v));
+  }
+
+  async function saveWein() {
+    const name = document.getElementById('f-name').value.trim();
+    const flaschen = parseInt(document.getElementById('f-flaschen').value);
+    if (!name) { showToast('Weinname ist erforderlich.'); return; }
+    if (isNaN(flaschen)||flaschen<0) { showToast('Bitte eine gültige Flaschenzahl eingeben.'); return; }
+    const btn = document.getElementById('save-btn');
+    btn.disabled=true; btn.textContent='Speichern…';
+    const payload = {
+      name,
+      weingut: document.getElementById('f-weingut').value.trim()||null,
+      jahrgang: parseInt(document.getElementById('f-jahrgang').value)||null,
+      rebsorte: document.getElementById('f-rebsorte').value.trim()||null,
+      typ: document.getElementById('f-typ').value||null,
+      flaschen,
+      kaufpreis: parseFloat(document.getElementById('f-kaufpreis').value)||null,
+      notizen: document.getElementById('f-notizen').value.trim()||null,
+      bewertung: starValue||null,
+    };
+    const result = editId ? await sbUpdate('weine', editId, payload) : await sbInsert('weine', payload);
+    btn.disabled=false; btn.textContent='Speichern';
+    if (!result) { showToast('Fehler beim Speichern.'); return; }
+    showToast(editId ? 'Wein aktualisiert ✓' : 'Wein erfasst ✓');
+    closeModal(); loadWeine();
+  }
+
+  function editWein(id) { const w=allWeine.find(w=>w.id===id); if(w) openModal(w); }
+
+  async function deleteWein(id, name) {
+    if (!confirm(`«${name}» wirklich entfernen?`)) return;
+    await sbDelete('weine', id);
+    showToast('Wein entfernt.'); loadWeine();
+  }
+
+  function setView(v) {
+    document.getElementById('view-table').style.display = v==='table'?'block':'none';
+    document.getElementById('view-cards').style.display = v==='cards'?'block':'none';
+    document.getElementById('btn-table').classList.toggle('active', v==='table');
+    document.getElementById('btn-cards').classList.toggle('active', v==='cards');
+  }
+
+  function esc(s) { return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''; }
+
+  function renderStars(n) {
+    if (!n) return '<span style="color:var(--cream-d)">—</span>';
+    return `<span class="stars">${'★'.repeat(n)}<span class="empty">${'★'.repeat(5-n)}</span></span>`;
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+  }
+</script>
+</body>
+</html>
